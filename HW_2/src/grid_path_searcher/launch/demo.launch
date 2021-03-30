@@ -24,7 +24,7 @@
       <param name="planning/start_y" value="$(arg start_y)"/>
       <param name="planning/start_z" value="$(arg start_z)"/>
 
-      <param name="result/times" value="20.0"/>
+      <param name="result/times" value="10.0"/>
   </node>
 
   <node pkg ="grid_path_searcher" name ="random_complex" type ="random_complex" output = "screen">    
@@ -37,9 +37,11 @@
       <param name="map/z_size"     value="$(arg map_size_z)" />
 
       <param name="map/circle_num" value="40"/>        
-      <param name="map/obs_num"    value="300"/>        
+      <param name="map/obs_num"    value="300"/>    
+      <!-- <param name="map/circle_num" value="10"/>        
+      <param name="map/obs_num"    value="10"/>      -->
       <param name="map/resolution" value="0.1"/> 
-      <param name="map/seed"       value="1"/>       
+      <param name="map/seed"       value="2"/>       
 
       <param name="ObstacleShape/lower_rad" value="0.1"/>
       <param name="ObstacleShape/upper_rad" value="0.7"/>
@@ -58,12 +60,10 @@
   </node>
 
   <node pkg="grid_path_searcher" name="pub_target_node" type="pub_target_node" output="screen">
-      <param name="goal/x"     value="-3.28251" />
-      <param name="goal/y"     value="4.60843" />
-      <param name="goal/z"     value="0.44" />   
-    <!-- -3.2756,4.60843,0.44 -->
-      <!-- -4.77293,-4.01324,0.34 -->
-      <!-- -2.84117,4.52894,0.42 -->
+      <param name="goal/x"     value="4.78851" />
+      <param name="goal/y"     value="3.76074" />
+      <param name="goal/z"     value="0.5" />   
   </node>
-
+  <!-- 4.58665,2.10404,0.48 -->
+  <!-- 4.78851,3.76074,0.5 -->
 </launch>

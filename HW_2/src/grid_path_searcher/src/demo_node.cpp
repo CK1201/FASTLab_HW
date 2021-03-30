@@ -70,11 +70,14 @@ void rcvWaypointsCallback(const nav_msgs::Path & wp)
     numbers += _astar_path_finder->visited_num;
     times++;
     if((int)times%(int)Times==0){
-        ROS_WARN("average running time is %f ms", runtime/times);
+        
+        ROS_WARN("average running time is %f ms", runtime / times);
         ROS_WARN("average number of visited nodes is %f ", numbers/times);
         ROS_WARN("average length is %f m", length/times);
-        // cout << "average running time is " << runtime / times << " ms.";
-
+        runtime = 0;
+        length = 0;
+        numbers = 0;
+        times = 0;
     }
 }
 

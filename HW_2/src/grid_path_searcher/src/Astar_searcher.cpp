@@ -110,29 +110,29 @@ Eigen::Vector3d AstarPathFinder::coordRounding(const Eigen::Vector3d & coord)
     return gridIndex2coord(coord2gridIndex(coord));
 }
 
-inline bool AstarPathFinder::isOccupied(const Eigen::Vector3i & index) const
+bool AstarPathFinder::isOccupied(const Eigen::Vector3i & index) const
 {
     return isOccupied(index(0), index(1), index(2));
 }
 
-inline bool AstarPathFinder::isFree(const Eigen::Vector3i & index) const
+bool AstarPathFinder::isFree(const Eigen::Vector3i & index) const
 {
     return isFree(index(0), index(1), index(2));
 }
 
-inline bool AstarPathFinder::isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const 
+bool AstarPathFinder::isOccupied(const int & idx_x, const int & idx_y, const int & idx_z) const 
 {
     return  (idx_x >= 0 && idx_x < GLX_SIZE && idx_y >= 0 && idx_y < GLY_SIZE && idx_z >= 0 && idx_z < GLZ_SIZE && 
             (data[idx_x * GLYZ_SIZE + idx_y * GLZ_SIZE + idx_z] == 1));
 }
 
-inline bool AstarPathFinder::isFree(const int & idx_x, const int & idx_y, const int & idx_z) const 
+bool AstarPathFinder::isFree(const int & idx_x, const int & idx_y, const int & idx_z) const 
 {
     return (idx_x >= 0 && idx_x < GLX_SIZE && idx_y >= 0 && idx_y < GLY_SIZE && idx_z >= 0 && idx_z < GLZ_SIZE && 
            (data[idx_x * GLYZ_SIZE + idx_y * GLZ_SIZE + idx_z] < 1));
 }
 
-inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNodePtr> & neighborPtrSets, vector<double> & edgeCostSets)
+void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNodePtr> & neighborPtrSets, vector<double> & edgeCostSets)
 {   
     neighborPtrSets.clear();
     edgeCostSets.clear();
@@ -143,28 +143,44 @@ inline void AstarPathFinder::AstarGetSucc(GridNodePtr currentPtr, vector<GridNod
     *
     *
     */
+    int count = 0;
     GridNodePtr neighborPtr;
     for (int i = -1; i < 2;i++){
-        for (int j = -1; j < 2;j++){
+        // cout << "layer 1 update" << endl;
+        for (int j = -1; j < 2; j++)
+        {
             for (int k = -1; k < 2;k++){
+                // cout << "layer 3 update" << endl;
                 if(i==0&&j==0&&k==0)
                     continue;
                 Vector3i tmpIdx(currentPtr->index(0) + i, currentPtr->index(1) + j, currentPtr->index(2) + k);
+                // cout << "layer 3 20%" << endl;
                 if (isOccupied(tmpIdx))
                     continue;
-                if (tmpIdx(0) < 0 || tmpIdx(0) > GLX_SIZE || tmpIdx(1) < 0 || tmpIdx(1) > GLY_SIZE || tmpIdx(2) < 0 || tmpIdx(2) > GLZ_SIZE)
+                // cout << "layer 3 40%" << endl;
+                if (tmpIdx(0) < 0 || tmpIdx(0) >= GLX_SIZE || tmpIdx(1) < 0 || tmpIdx(1) >= GLY_SIZE || tmpIdx(2) < 0 || tmpIdx(2) >= GLZ_SIZE)
                     continue;
+                // cout << "layer 3 60%" << endl;
                 neighborPtr = GridNodeMap[tmpIdx(0)][tmpIdx(1)][tmpIdx(2)];
-                if (neighborPtr->id==-1)
+                // cout << "layer 3 70%" << endl;
+                // cout << "id:" << neighborPtr->hScore << endl;
+                if (neighborPtr->id == -1)
                     continue;
+                // cout << "layer 3 80%" << endl;
                 neighborPtrSets.push_back(neighborPtr);
+                // cout << "layer 3 90%" << endl;
                 edgeCostSets.push_back(sqrt(
                     (tmpIdx(0) - currentPtr->index(0)) * (tmpIdx(0) - currentPtr->index(0)) +
                     (tmpIdx(1) - currentPtr->index(1)) * (tmpIdx(1) - currentPtr->index(1)) +
                     (tmpIdx(2) - currentPtr->index(2)) * (tmpIdx(2) - currentPtr->index(2))));
+                // cout << "layer 3 finished" << endl;
+                count++;
             }
         }
+        // cout << "layer 1 finished" << endl;
     }
+    // cout << "size of neighbor:"<< count << endl;
+
 }
 
 double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
@@ -184,12 +200,14 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     double dis;
 
     //Euclidean
-    dis = sqrt(
-        (node1->index(0) - node2->index(0)) * (node1->index(0) - node2->index(0)) +
-        (node1->index(1) - node2->index(1)) * (node1->index(1) - node2->index(1)) +
-        (node1->index(2) - node2->index(2)) * (node1->index(2) - node2->index(2)));
+    // dis = sqrt(
+    //     (node1->index(0) - node2->index(0)) * (node1->index(0) - node2->index(0)) +
+    //     (node1->index(1) - node2->index(1)) * (node1->index(1) - node2->index(1)) +
+    //     (node1->index(2) - node2->index(2)) * (node1->index(2) - node2->index(2)));
 
+    //
     dis = 0;
+
     //Manhattan
     // dis = abs(node1->index(0) - node2->index(0)) +
     //       abs(node1->index(1) - node2->index(1)) +
@@ -252,6 +270,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     startPtr -> id = 1; 
     startPtr -> coord = start_pt;
     startPtr->nodeMapIt = openSet.insert(make_pair(startPtr->fScore, startPtr));
+    // openSet.erase(openSet.end());
     /*
     *
     STEP 2 :  some else preparatory works which should be done before while loop
@@ -283,19 +302,29 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         */
         
         //tie breaker
+        
         bool tie_breaker = true;
+        std::multimap<double, GridNodePtr> tempSet;
         if (tie_breaker)
         {
-            GridNodePtr tempPtr = openSet.begin()->second;
-            std::multimap<double, GridNodePtr> tempSet;
             tempSet.clear();
-            double fmin = openSet.begin()->second->fScore;
+            GridNodePtr tempPtr = openSet.begin()->second;
+            double fmin = openSet.begin()->first;
             auto it = openSet.begin();
-            while (tempPtr->fScore == fmin&&it!=openSet.end())
+            // cout << "test1" << endl;
+            while (it != openSet.end())
             {
+                if(tempPtr->fScore != fmin){
+                    break;
+                }
+                // cout << "test3" << endl;
                 tempSet.insert(make_pair(tempPtr->hScore, tempPtr));
-                tempPtr = ++it->second;
+                // cout << "test4" << endl;
+                it++;
+                tempPtr = it->second;
+                // cout << "test5" << endl;
             }
+            // cout << "test2" << endl;
             currentPtr = tempSet.begin()->second;
         }
         else
@@ -304,10 +333,8 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         }
 
         openSet.erase(currentPtr->nodeMapIt);
-
-        // currentPtr = openSet.begin()->second;
-        // openSet.erase(openSet.begin());
-        if(currentPtr->id==-1)
+        // cout << "pop currentnode" << endl;
+        if (currentPtr->id == -1)
             continue;
         currentPtr->id = -1;
         // if the current node is the goal
@@ -326,6 +353,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
 
         // cout << "current:" << currentPtr->index(0) << ',' << currentPtr->index(1) << ',' << currentPtr->index(2)
         //      << "    with g:" << currentPtr->gScore << endl;
+        // cout << "start to GetSucc" << endl;
         AstarGetSucc(currentPtr, neighborPtrSets, edgeCostSets); //STEP 4: finish AstarPathFinder::AstarGetSucc yourself
 
         /*
@@ -336,8 +364,11 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         *        
         */
         // vector<GridNodePtr>::iterator it = neighborPtrSets.begin();
+        // cout << "start to update openset" << endl;
+
         for (int i = 0; i < (int)neighborPtrSets.size(); i++)
         {
+            // cout << "updata: " << i+1 << "/" << neighborPtrSets.size() << endl;
             /*
             *
             *
@@ -351,6 +382,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
             *        
             */
             neighborPtr = neighborPtrSets[i];
+            // cout << "neighborPtr id:" << neighborPtr->id << endl;
             if (neighborPtr->id == 0)
             { //discover a new node, which is not in the closed set and open set
                 /*
@@ -360,6 +392,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                // cout << "not visited" << endl;
                 neighborPtr->id = 1;
                 neighborPtr->gScore = currentPtr->gScore + edgeCostSets[i];
                 neighborPtr->hScore = getHeu(neighborPtr, endPtr);
@@ -376,6 +409,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
+                // cout << "better path" << endl;
                 openSet.erase(neighborPtr->nodeMapIt);
                 neighborPtr->gScore = currentPtr->gScore + edgeCostSets[i];
                 neighborPtr->fScore = neighborPtr->hScore + neighborPtr->gScore;
@@ -389,10 +423,13 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
                 please write your code below
                 *        
                 */
-                
+                // cout << "closed list" << endl;
+                // cout << "id: " << neighborPtr->id << endl;
                 continue;
             }
         }
+        // cout << "update openset over" << endl;
+        // cout << "openset size: " << openSet.size() << endl;
     }
     cout << "********failed********" << endl;
     //if search fails
@@ -432,4 +469,15 @@ vector<Vector3d> AstarPathFinder::getPath() {
 
 float AstarPathFinder::getRunningTime(){
     return running_time;
+}
+
+double AstarPathFinder::getTieBreaker(GridNodePtr node){
+    Vector3d gn(node->index(0)-goalIdx(0), node->index(1)-goalIdx(1), node->index(2)-goalIdx(2));
+    Vector3d gs(startIdx(0)-goalIdx(0), startIdx(1)-goalIdx(1), startIdx(2)-goalIdx(2));
+    double abs_gn = sqrt(gn(0) * gn(0) + gn(1) * gn(1) + gn(2) * gn(2));
+    double abs_gs = sqrt(gs(0) * gs(0) + gs(1) * gs(1) + gs(2) * gs(2));
+    double cos_gn_gs = gn(0) * gs(0) + gn(1) * gs(1) + gn(2) * gs(2);
+    cos_gn_gs /= (abs_gn * abs_gs);
+    cos_gn_gs = 1 - abs(cos_gn_gs);
+    return cos_gn_gs;
 }

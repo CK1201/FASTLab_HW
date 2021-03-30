@@ -56,7 +56,7 @@ class AstarPathFinder
 		std::vector<Eigen::Vector3d> getPath();
 		std::vector<Eigen::Vector3d> getVisitedNodes();
 		float getRunningTime();
-
+		double getTieBreaker(GridNodePtr node);
 };
 
 #endif
