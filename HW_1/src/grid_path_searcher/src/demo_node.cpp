@@ -44,6 +44,13 @@ gridPathFinder * _path_finder = new gridPathFinder();
 void rcvWaypointsCallback(const nav_msgs::Path & wp);
 void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map);
 
+void visDebugNodes( vector<Vector3d> nodes );
+void visGridPath( vector<Vector3d> nodes, bool is_use_jps );
+void visCloseNode( vector<Vector3d> nodes );
+void visOpenNode( vector<Vector3d> nodes );
+void visCloseNodeSequence( vector<Vector3d> nodes );
+void pathFinding(const Vector3d start_pt, const Vector3d target_pt);
+
 void rcvWaypointsCallback(const nav_msgs::Path & wp)
 {     
     if( wp.poses[0].pose.position.z < 0.0 || _has_map == false )
@@ -159,4 +166,207 @@ int main(int argc, char** argv)
 
     delete _path_finder;
     return 0;
+}
+
+void visDebugNodes( vector<Vector3d> nodes )
+{   
+    visualization_msgs::Marker node_vis; 
+    node_vis.header.frame_id = "world";
+    node_vis.header.stamp = ros::Time::now();
+    
+    node_vis.ns = "demo_node/debug_info";
+
+    node_vis.type = visualization_msgs::Marker::CUBE_LIST;
+    node_vis.action = visualization_msgs::Marker::ADD;
+    node_vis.id = 0;
+
+    node_vis.pose.orientation.x = 0.0;
+    node_vis.pose.orientation.y = 0.0;
+    node_vis.pose.orientation.z = 0.0;
+    node_vis.pose.orientation.w = 1.0;
+
+    node_vis.color.a = 0.5;
+    node_vis.color.r = 0.0;
+    node_vis.color.g = 0.0;
+    node_vis.color.b = 0.0;
+
+    node_vis.scale.x = _resolution;
+    node_vis.scale.y = _resolution;
+    node_vis.scale.z = _resolution;
+
+    geometry_msgs::Point pt;
+    for(int i = 0; i < int(nodes.size()); i++)
+    {
+        Vector3d coord = nodes[i];
+        pt.x = coord(0);
+        pt.y = coord(1);
+        pt.z = coord(2);
+
+        node_vis.points.push_back(pt);
+    }
+
+    _debug_nodes_vis_pub.publish(node_vis);
+}
+
+void visGridPath( vector<Vector3d> nodes, bool is_use_jps )
+{   
+    visualization_msgs::Marker node_vis; 
+    node_vis.header.frame_id = "world";
+    node_vis.header.stamp = ros::Time::now();
+    
+    if(is_use_jps)
+        node_vis.ns = "demo_node/jps_path";
+    else
+        node_vis.ns = "demo_node/astar_path";
+
+    node_vis.type = visualization_msgs::Marker::CUBE_LIST;
+    node_vis.action = visualization_msgs::Marker::ADD;
+    node_vis.id = 0;
+
+    node_vis.pose.orientation.x = 0.0;
+    node_vis.pose.orientation.y = 0.0;
+    node_vis.pose.orientation.z = 0.0;
+    node_vis.pose.orientation.w = 1.0;
+
+    if(is_use_jps){
+        node_vis.color.a = 1.0;
+        node_vis.color.r = 1.0;
+        node_vis.color.g = 0.0;
+        node_vis.color.b = 0.0;
+    }
+    else{
+        node_vis.color.a = 1.0;
+        node_vis.color.r = 0.0;
+        node_vis.color.g = 1.0;
+        node_vis.color.b = 0.0;
+    }
+
+
+    node_vis.scale.x = _resolution;
+    node_vis.scale.y = _resolution;
+    node_vis.scale.z = _resolution;
+
+    geometry_msgs::Point pt;
+    for(int i = 0; i < int(nodes.size()); i++)
+    {
+        Vector3d coord = nodes[i];
+        pt.x = coord(0);
+        pt.y = coord(1);
+        pt.z = coord(2);
+
+        node_vis.points.push_back(pt);
+    }
+
+    _grid_path_vis_pub.publish(node_vis);
+}
+
+void visCloseNode( vector<Vector3d> nodes )
+{   
+    visualization_msgs::Marker node_vis; 
+    node_vis.header.frame_id = "world";
+    node_vis.header.stamp = ros::Time::now();
+    node_vis.ns = "demo_node/closed_nodes";
+    node_vis.type = visualization_msgs::Marker::CUBE_LIST;
+    node_vis.action = visualization_msgs::Marker::ADD;
+    node_vis.id = 0;
+
+    node_vis.pose.orientation.x = 0.0;
+    node_vis.pose.orientation.y = 0.0;
+    node_vis.pose.orientation.z = 0.0;
+    node_vis.pose.orientation.w = 1.0;
+    node_vis.color.a = 0.5;
+    node_vis.color.r = 0.0;
+    node_vis.color.g = 0.0;
+    node_vis.color.b = 1.0;
+
+    node_vis.scale.x = _resolution;
+    node_vis.scale.y = _resolution;
+    node_vis.scale.z = _resolution;
+
+    geometry_msgs::Point pt;
+    for(int i = 0; i < int(nodes.size()); i++)
+    {
+        Vector3d coord = nodes[i];
+        pt.x = coord(0);
+        pt.y = coord(1);
+        pt.z = coord(2);
+
+        node_vis.points.push_back(pt);
+    }
+
+    _closed_nodes_vis_pub.publish(node_vis);
+}
+
+void visOpenNode( vector<Vector3d> nodes )
+{   
+    visualization_msgs::Marker node_vis; 
+    node_vis.header.frame_id = "world";
+    node_vis.header.stamp = ros::Time::now();
+    node_vis.ns = "demo_node/visited_nodes";
+    node_vis.type = visualization_msgs::Marker::CUBE_LIST;
+    node_vis.action = visualization_msgs::Marker::ADD;
+    node_vis.id = 0;
+
+    node_vis.pose.orientation.x = 0.0;
+    node_vis.pose.orientation.y = 0.0;
+    node_vis.pose.orientation.z = 0.0;
+    node_vis.pose.orientation.w = 1.0;
+    node_vis.color.a = 0.3;
+    node_vis.color.r = 0.0;
+    node_vis.color.g = 1.0;
+    node_vis.color.b = 0.0;
+
+    node_vis.scale.x = _resolution;
+    node_vis.scale.y = _resolution;
+    node_vis.scale.z = _resolution;
+
+    geometry_msgs::Point pt;
+    for(int i = 0; i < int(nodes.size()); i++)
+    {
+        Vector3d coord = nodes[i];
+        pt.x = coord(0);
+        pt.y = coord(1);
+        pt.z = coord(2);
+
+        node_vis.points.push_back(pt);
+    }
+
+    _open_nodes_vis_pub.publish(node_vis);
+}
+
+void visCloseNodeSequence( vector<Vector3d> nodes )
+{   
+    visualization_msgs::Marker node_vis; 
+    node_vis.header.frame_id = "world";
+    node_vis.header.stamp = ros::Time::now();
+    node_vis.ns = "demo_node/animation_of_close_nodes";
+    node_vis.type = visualization_msgs::Marker::CUBE_LIST;
+    node_vis.action = visualization_msgs::Marker::ADD;
+    node_vis.id = 0;
+
+    node_vis.pose.orientation.x = 0.0;
+    node_vis.pose.orientation.y = 0.0;
+    node_vis.pose.orientation.z = 0.0;
+    node_vis.pose.orientation.w = 1.0;
+    node_vis.color.a = 1.0;
+    node_vis.color.r = 0.0;
+    node_vis.color.g = 0.0;
+    node_vis.color.b = 0.0;
+
+    node_vis.scale.x = _resolution;
+    node_vis.scale.y = _resolution;
+    node_vis.scale.z = _resolution;
+
+    geometry_msgs::Point pt;
+    for(int i = 0; i < int(nodes.size()); i++)
+    {
+        usleep(50000);
+        Vector3d coord = nodes[i];
+        pt.x = coord(0);
+        pt.y = coord(1);
+        pt.z = coord(2);
+
+        node_vis.points.push_back(pt);
+        _close_nodes_sequence_vis_pub.publish(node_vis);
+    }
 }
