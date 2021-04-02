@@ -198,20 +198,19 @@ double AstarPathFinder::getHeu(GridNodePtr node1, GridNodePtr node2)
     *
     */
     double dis;
+    //Dijkstra
+    // dis = 0;
+
+    //Manhattan
+    dis = abs(node1->index(0) - node2->index(0)) +
+          abs(node1->index(1) - node2->index(1)) +
+          abs(node1->index(2) - node2->index(2));
 
     //Euclidean
     // dis = sqrt(
     //     (node1->index(0) - node2->index(0)) * (node1->index(0) - node2->index(0)) +
     //     (node1->index(1) - node2->index(1)) * (node1->index(1) - node2->index(1)) +
     //     (node1->index(2) - node2->index(2)) * (node1->index(2) - node2->index(2)));
-
-    //
-    dis = 0;
-
-    //Manhattan
-    // dis = abs(node1->index(0) - node2->index(0)) +
-    //       abs(node1->index(1) - node2->index(1)) +
-    //       abs(node1->index(2) - node2->index(2));
 
     //Diagonal
     // double dx, dy, dz, dmin, d1, d2;
@@ -286,7 +285,9 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
     vector<GridNodePtr> neighborPtrSets;
     vector<double> edgeCostSets;
     // this is the main loop
-    while ( !openSet.empty()){
+    
+    while (!openSet.empty())
+    {
         if(flag)
             break;
         /*
@@ -303,7 +304,7 @@ void AstarPathFinder::AstarGraphSearch(Vector3d start_pt, Vector3d end_pt)
         
         //tie breaker
         
-        bool tie_breaker = true;
+        bool tie_breaker = false;
         std::multimap<double, GridNodePtr> tempSet;
         if (tie_breaker)
         {

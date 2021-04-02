@@ -65,15 +65,16 @@ void rcvWaypointsCallback(const nav_msgs::Path & wp)
 
     // ROS_INFO("[node] receive the planning target");
     pathFinding(_start_pt, target_pt);
-    runtime += _astar_path_finder->running_time;
-    length += _astar_path_finder->length;
-    numbers += _astar_path_finder->visited_num;
+    runtime += _jps_path_finder->running_time;
+    numbers += _jps_path_finder->visited_num;
+    length += _jps_path_finder->length;
     times++;
     if((int)times%(int)Times==0){
         
         ROS_WARN("average running time is %f ms", runtime / times);
-        ROS_WARN("average number of visited nodes is %f ", numbers/times);
         ROS_WARN("average length is %f m", length/times);
+        ROS_WARN("average number of visited nodes is %f ", numbers/times);
+        
         runtime = 0;
         length = 0;
         numbers = 0;
@@ -125,23 +126,23 @@ void rcvPointCloudCallBack(const sensor_msgs::PointCloud2 & pointcloud_map)
 void pathFinding(const Vector3d start_pt, const Vector3d target_pt)
 {
     //Call A* to search for a path
-    _astar_path_finder->AstarGraphSearch(start_pt, target_pt);
+    // _astar_path_finder->AstarGraphSearch(start_pt, target_pt);
 
-    //Retrieve the path
-    auto grid_path     = _astar_path_finder->getPath();
-    auto visited_nodes = _astar_path_finder->getVisitedNodes();
+    // //Retrieve the path
+    // auto grid_path     = _astar_path_finder->getPath();
+    // auto visited_nodes = _astar_path_finder->getVisitedNodes();
 
-    //Visualize the result
-    visGridPath (grid_path, false);
-    visVisitedNode(visited_nodes);
+    // //Visualize the result
+    // visGridPath (grid_path, false);
+    // visVisitedNode(visited_nodes);
 
-    //Reset map for next call
-    _astar_path_finder->resetUsedGrids();
+    // //Reset map for next call
+    // _astar_path_finder->resetUsedGrids();
 
-    //_use_jps = 0 -> Do not use JPS
-    //_use_jps = 1 -> Use JPS
+    // _use_jps = 0 -> Do not use JPS
+    // _use_jps = 1 -> Use JPS
     //you just need to change the #define value of _use_jps
-#define _use_jps 0
+#define _use_jps 1
 #if _use_jps
     {
         //Call JPS to search for a path

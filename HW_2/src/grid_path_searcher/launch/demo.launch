@@ -36,10 +36,10 @@
       <param name="map/y_size"     value="$(arg map_size_y)" />
       <param name="map/z_size"     value="$(arg map_size_z)" />
 
-      <param name="map/circle_num" value="40"/>        
-      <param name="map/obs_num"    value="300"/>    
-      <!-- <param name="map/circle_num" value="10"/>        
-      <param name="map/obs_num"    value="10"/>      -->
+      <!-- <param name="map/circle_num" value="40"/>        
+      <param name="map/obs_num"    value="300"/>     -->
+      <param name="map/circle_num" value="1"/>        
+      <param name="map/obs_num"    value="1"/>  
       <param name="map/resolution" value="0.1"/> 
       <param name="map/seed"       value="2"/>       
 

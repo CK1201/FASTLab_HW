@@ -47,22 +47,21 @@ ckwu1201@163.com}
 \maketitle
 
 \begin{abstract}
-In this report, I compare the operation efficiency of A* algorithm with different heuristic functions, with and without Tie Breaker. It turns out that A* with diagonal heuristic functions gets the shortest path in a complex map at the cost of visiting 592 nodes and consuming 1.749ms, which is far better than other methods. When it comes to a empty map, A* with manhattan heuristic functions is the best. Adding tie breaker to the program will only slightly reduce the number of nodes visited, but it will greatly increase the running time.
+	In this report, I compare the operating efficiency of A* and JPS algorithms in different heuristic functions and with or without Tie Breaker. The best method is the JPS algorithm that uses manhattan distance as the heuristic function. Its running time is 0.208ms and the number of visited nodes is 46.Meanwhile, the path found is only 0.84\% longer than the optimal path. When it comes to the empty map, the JPS algorithm using manhattan distance and diagonal distance as heuristic functions run longer time than A* algorithm by 1056.5\% and 109.2\% respectively. Joining Tie Breaker will reduce the number of nodes visited, but increase the running time varying from method to method.
 \end{abstract}
 
 \begin{IEEEkeywords}
-A* algorithm; Heuristic Function; Tie Breaker
+A*; JPS; Heuristic Function; Tie Breaker
 \end{IEEEkeywords}
 
 %\section{INTRODUCTION}
 %A* algorithm is a classical search-based path finding algorithm. 
 
 \section{A* Algorithm}
-
-\begin{figure}[ht]
+\begin{figure}[htbp]
 	\removelatexerror
 	\begin{algorithm}[H]
-		\caption{A*}
+		\caption{A* algorithm}
 		\LinesNumbered
 		\KwData{Grid Map $ \bf M $, Openlist $ \bf O $, Closedlist $ \bf C $ }
 		\KwIn{Start $ \bf S $, Goal $ \bf G $}
@@ -100,17 +99,20 @@ A* algorithm; Heuristic Function; Tie Breaker
 
 \section{Heuristic Function}
 A heuristic function is an estimated distance from a node N(x,y,z) to the goal G(x,y,z), which can be added to the accumulated cost to estimate the length of the path going through N, and thus improve the efficiency of search. The following is three different types of heuristic function.
-\subsection{Manhattan}
-
+\subsection{Dijkstra}
 \begin{equation}
-D_{M}=\sum_{i=1}^{3}{|N_i-G_i|}  \label{H1}
+D=0  \label{H1}
+\end{equation}
+
+\subsection{Manhattan}
+\begin{equation}
+D_{M}=\sum_{i=1}^{3}{|N_i-G_i|}  \label{H2}
 \end{equation}
 
 
 \subsection{Euclidean}
-
 \begin{equation}
-D_{E}=\sqrt{\sum_{i=1}^{3}{(N_i-G_i)^2}} \label{H2}
+D_{E}=\sqrt{\sum_{i=1}^{3}{(N_i-G_i)^2}} \label{H3}
 \end{equation}
 
 \subsection{Diagonal}
@@ -119,9 +121,9 @@ Let
 d_i=|N_i-G_i|, i=1,2,3.
 \end{equation*}
 
-Make sure that $ d_1 \leq d_2 \leq d_3 $, and
+Sort $ d_i $ and make sure that $ d_1 \leq d_2 \leq d_3 $, then
 \begin{equation}
-D_{D}=\sqrt{3}d_1+\sqrt{2}(d_2-d_1)+(d_3-d_2).   \label{H3}
+D_{D}=\sqrt{3}d_1+\sqrt{2}(d_2-d_1)+(d_3-d_2).   \label{H4}
 \end{equation}
 
 \section{Tie Breaker}
@@ -170,7 +172,7 @@ For the nodes with the same minimum f score in the open list, it is not necessar
 	\label{tbl:table1}
 \end{table}
 
-In order to generate the same experimental environment, I set the random seed as 1 when generating random map. What's more, I write a new node to publish a goal so that the searcher will receive the same goal. For each method, the program will run 10 times and then output the average of the results. I set the goal at (4.78851,3.76074,0.5) and create a complex map and an empty maps to test different methods.Fig \ref{fig:label4_1} and Fig \ref{fig:label4_2} shows the complex and empty maps. Table \ref {tbl:table1} shows the results of different methods. 
+I run all methods under both a complex map with many obstacles and an open map. In order to get the same goal in different ways, I wrote a node that continuously sends the goal. For each method, the program will run 10 times, and the program will output the average of the results. The target is set at (4.78851, 3.76074, 0.5). Fig \ref{fig:label4_1} and Fig \ref{fig:label4_2} respectively show the shortest path obtained by the program under complex and empty maps. Table \ref {tbl:table1} shows the average results of different methods.
 
 \begin{figure}[htbp]
 	\centering
@@ -186,16 +188,15 @@ In order to generate the same experimental environment, I set the random seed as
 	\label{fig:label4_2}
 \end{figure}
 
-From the first four lines of Table \ref {tbl:table1}, we can find that although A* Manhattan has the shortest running time, its path length is not optimal because Manhattan distance always longer than the realistic shortest path. Compared with A* Euclidean, A* Diagonal runs shorter times and visits less nodes as a result of that Diagonal distance is closer to the realistic shortest distance from the start point to the goal point than Euclidean distance. Namely, Diagonal distance is more accurate in estimating the realistic shortest path.
+It can be seen from the results in Table \ref {tbl:table1} that under a complex map, for all heuristic functions, the JPS algorithm has improved running time, shortest path, and number of access nodes compared to the A* algorithm. The best method is the JPS algorithm that uses manhattan distance as the heuristic function. Its running time is 0.208ms and the number of visited nodes is 46, which respectively is one thrid and one seventh of the results obtained by the second best method. What's more, the path found is only 0.84\% longer than the optimal path. From the perspective of heuristic function, when manhattan distance is used as the heuristic function of the algorithm, the running time is the shortest. But the path obtained is not optimal,which is because the distance from the current node to the target node estimated by the Manhattan distance will be longer than the actual optimal distance, resulting of the heuristic function is not admissible.
 
-For the methods with Tie Breaker, it shows that the program runs longer time but visits a little fewer nodes. A* Manhattan with Tie Breaker obtains a better path than A* Manhattan.
+In an empty map, although the JPS algorithm greatly reduces the number of node visits, when the algorithm uses manhattan distance and diagonal distance as heuristic functions, the running time increases by 1056.5\% and 109.2\%, respectively. This is because in an empty map, the JPS algorithm will search for too many unnecessary nodes during the jump process, resulting in the JPS algorithm's longer running time than the A* algorithm.
 
-For the map with less obstacles, it turns out that A* Manhattan finds the shortest path at at the cost of both least running time and visited nodes.
+Whether it is a complex or empty map, for all methods, joining Tie Breaker will reduce the number of visited nodes slightly, but the running time will increase to varying degrees.
 
-
-\section{Problems I meet}
+\section{Problems I met}
 \subsection{Problem I}
-When I set the goal at the edge of the map, the system reports errors that Segmentation fault (Address not mapped to object [(nil)]) as it is showed in Fig. \ref{fig:label5_1}. Finally, I find that when the program get the neighbors, the feasible index ranges from 0 to GL\_SIZE-1 rather than 0 to GL\_SIZE.
+When I set the goal at the edge of the map, the system reported errors that Segmentation fault (Address not mapped to object [(nil)]) as it is showed in Fig. \ref{fig:label5_1}. Finally, I find that when the program get the neighbors, the feasible index ranges from 0 to GL\_SIZE-1 rather than from 0 to GL\_SIZE.
 
 \begin{figure}[htbp]
 	\centering
@@ -205,17 +206,15 @@ When I set the goal at the edge of the map, the system reports errors that Segme
 \end{figure}
 
 
-\subsection{Problem II}
-When there are more than one node in the open list that has the same smallest f score, I create a multimap type container to store these nodes. Before the program push a node into the container, it should judge that if the iterator is equal to the last iterator of the open list first,  otherwise the program may overflow.
+% \subsection{Problem II}
+% When there are more than one node in the open list that has the same smallest f score, I create a multimap type container to store these nodes. Before the program push a node into the container, it should judge that if the iterator is equal to the last iterator of the open list first,  otherwise the program may overflow.
 
-
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[scale=0.40]{figs/fig5_2.png}
-	\caption{Judge that if the iterator is equal to the last iterator of the open list first and then judge that if the node has the same f score.}
-	\label{fig:label5_2}
-\end{figure}
+% \begin{figure}[htbp]
+% 	\centering
+% 	\includegraphics[scale=0.40]{figs/fig5_2.png}
+% 	\caption{Judge that if the iterator is equal to the last iterator of the open list first and then judge that if the node has the same f score.}
+% 	\label{fig:label5_2}
+% \end{figure}
 %
 %The IEEEtran class file is used to format your paper and style the text. All margins, 
 %column widths, line spaces, and text fonts are prescribed; please do not 
