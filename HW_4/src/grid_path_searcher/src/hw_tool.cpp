@@ -83,9 +83,9 @@ Eigen::Vector3d Homeworktool::coordRounding(const Eigen::Vector3d & coord)
     return gridIndex2coord(coord2gridIndex(coord));
 }
 
-double Homeworktool::OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d _start_velocity,Eigen::Vector3d _target_position)
+Eigen::Vector2d Homeworktool::OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d _start_velocity,Eigen::Vector3d _target_position)
 {
-    double optimal_cost = 100000; // this just to initial the optimal_cost, you can delete it 
+    Vector2d optimal_cost; // this just to initial the optimal_cost, you can delete it
     /*
                     
 
@@ -105,9 +105,10 @@ double Homeworktool::OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d 
         T += learning_rate*((double)(dcost>0)*2-1);
         cost = getCost(T, _start_position, _start_velocity, _target_position);
         dcost = (getCost(T + step, _start_position, _start_velocity, _target_position) - cost) / step;
-        cout << "T:" << T << "  cost:" << cost << "  dcost:" << dcost << endl;
+        // cout << "T:" << T << "  cost:" << cost << "  dcost:" << dcost << endl;
     }
-    optimal_cost = getCost(T, _start_position, _start_velocity, _target_position);
+    optimal_cost(0) = getCost(T, _start_position, _start_velocity, _target_position);
+    optimal_cost(1) = T;
     return optimal_cost;
 }
 

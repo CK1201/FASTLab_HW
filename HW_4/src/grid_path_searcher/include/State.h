@@ -16,7 +16,10 @@ struct TrajectoryState
     std::vector<Eigen::Vector3d> Velocity;
     double Trajctory_Cost ;
     bool collision_check ;           //False -> no collision, True -> collision
-    bool optimal_flag;               //False -> not optimal in TraLibrary, True -> optimal in TraLibrary, 
+    bool optimal_flag;               //False -> not optimal in TraLibrary, True -> optimal in TraLibrary,
+    double T;
+    Eigen::Vector3d end_pos;
+    Eigen::Vector3d end_vel;
 
     TrajectoryState(std::vector<Eigen::Vector3d> _Position, std::vector<Eigen::Vector3d> _Velocity,double _Trajctory_Cost){
         Position        = _Position;
@@ -24,6 +27,7 @@ struct TrajectoryState
         Trajctory_Cost  = _Trajctory_Cost;
         collision_check = false;
         optimal_flag    = false;
+        T = 0;
     }
     TrajectoryState(){};
     ~TrajectoryState(){};

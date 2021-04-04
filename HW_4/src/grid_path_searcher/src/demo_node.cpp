@@ -116,7 +116,8 @@ void trajectoryLibrary(const Vector3d start_pt, const Vector3d start_velocity, c
     int c =0 ;
 
     double min_Cost = 100000.0;
-    double Trajctory_Cost;
+    double delta_time;
+    Vector2d Trajctory_Cost;
     TraLibrary  = new TrajectoryStatePtr ** [_discretize_step + 1];     //recored all trajectories after input
 
     for(int i=0; i <= _discretize_step; i++){           //acc_input_ax
@@ -142,7 +143,7 @@ void trajectoryLibrary(const Vector3d start_pt, const Vector3d start_velocity, c
                 Velocity.push_back(vel);
 
                 bool collision = false;
-                double delta_time;
+                
                 delta_time = _time_interval / double(_time_step);
                 
                 for(int step=0 ; step<=_time_step ; step ++){
@@ -193,23 +194,73 @@ void trajectoryLibrary(const Vector3d start_pt, const Vector3d start_velocity, c
                 Trajctory_Cost = _homework_tool -> OptimalBVP(pos,vel,target_pt);
 
                 //input the trajetory in the trajectory library
-                TraLibrary[i][j][k] = new TrajectoryState(Position,Velocity,Trajctory_Cost);
-                
+                TraLibrary[i][j][k] = new TrajectoryState(Position,Velocity,Trajctory_Cost(0));
+                TraLibrary[i][j][k]->T = Trajctory_Cost(1);
+                TraLibrary[i][j][k]->end_pos = pos;
+                TraLibrary[i][j][k]->end_vel = vel;
                 //if there is not any obstacle in the trajectory we need to set 'collision_check = true', so this trajectory is useable
                 if(collision)
                     TraLibrary[i][j][k]->setCollisionfree();
                 
                 //record the min_cost in the trajectory Library, and this is the part pf selecting the best trajectory cloest to the planning traget
-                if(Trajctory_Cost<min_Cost && TraLibrary[i][j][k]->collision_check == false){
+                if(Trajctory_Cost(0)<min_Cost && TraLibrary[i][j][k]->collision_check == false){
                     a = i;
                     b = j;
                     c = k;
-                    min_Cost = Trajctory_Cost;
+                    min_Cost = Trajctory_Cost(0);
+                    // cout << pos << endl;
                 }
             }
         }
     }
     TraLibrary[a][b][c] -> setOptimal();
+
+    bool flag = false;
+    if (flag)
+    {
+        vector<Vector3d> Position;
+        Position.clear();
+        Eigen::VectorXd delta_s(6), param(6);
+        MatrixXd mat = MatrixXd::Zero(6, 6);
+        double T = TraLibrary[a][b][c]->T;
+        // cout << T << endl;
+        Vector3d target_position = target_pt, start_velocity_ = TraLibrary[a][b][c]->end_vel, start_position = TraLibrary[a][b][c]->end_pos;
+        // cout << "-------------" << endl;
+        // cout << _start_position << endl;
+        for (int i = 0; i < 3; i++)
+        {
+            delta_s(i) = target_position(i) - start_velocity_(i) * T - start_position(i);
+            delta_s(i + 3) = 0 - start_velocity_(i);
+        }
+        mat(0, 0) = -12 / T / T / T;
+        mat(1, 1) = -12 / T / T / T;
+        mat(2, 2) = -12 / T / T / T;
+        mat(3, 3) = -2 / T;
+        mat(4, 4) = -2 / T;
+        mat(5, 5) = -2 / T;
+        mat(0, 3) = 6 / T / T;
+        mat(1, 4) = 6 / T / T;
+        mat(2, 5) = 6 / T / T;
+        mat(3, 0) = 6 / T / T;
+        mat(4, 1) = 6 / T / T;
+        mat(5, 2) = 6 / T / T;
+        param = mat * delta_s;
+        double t;
+        delta_time = _time_interval / double(_time_step);
+        for (int step = 0; step < T / delta_time;step++){
+            t = delta_time * (step + 1);
+            // cout << "(";
+            for (int i = 0; i < 3; i++)
+            {
+                pos(i) = 1 / 6 * param(i) * t * t * t + 1 / 2 * param(i+3) * t * t + start_velocity_(i) * t + start_position(i);
+                // cout << pos(i) << ",";
+            }
+            // cout << ")" << endl;
+            Position.push_back(pos);
+        }
+        TraLibrary[a][b][c]->Position.insert(TraLibrary[a][b][c]->Position.end(), Position.begin(), Position.end());
+    }
+
     visTraLibrary(TraLibrary);
     return;
 }
@@ -324,3 +375,4 @@ void visTraLibrary(TrajectoryStatePtr *** TraLibrary)
         }
     }    
 }
+

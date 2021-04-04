@@ -37,7 +37,7 @@ class Homeworktool
 		bool isObsFree(const double coord_x, const double coord_y, const double coord_z);
 				
 		Eigen::Vector3d coordRounding(const Eigen::Vector3d & coord);
-		double OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d _start_velocity,Eigen::Vector3d _target_position);
+		Eigen::Vector2d OptimalBVP(Eigen::Vector3d _start_position,Eigen::Vector3d _start_velocity,Eigen::Vector3d _target_position);
 };
 
 #endif
