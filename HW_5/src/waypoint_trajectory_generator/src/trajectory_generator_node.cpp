@@ -89,7 +89,7 @@ void trajGeneration(Eigen::MatrixXd path)
     visWayPointPath(path);
 
     //After you finish your homework, you can use the function visWayPointTraj below to visulize your trajectory
-    //visWayPointTraj( _polyCoeff, _polyTime);
+    visWayPointTraj( _polyCoeff, _polyTime);
 }
 
 int main(int argc, char** argv)
@@ -263,7 +263,7 @@ Vector3d getPosPoly( MatrixXd polyCoeff, int k, double t )
               time(j) = pow(t, j);
 
         ret(dim) = coeff.dot(time);
-        //cout << "dim:" << dim << " coeff:" << coeff << endl;
+        // cout << "dim:" << dim << " coeff:" << coeff << endl;
     }
 
     return ret;
@@ -284,6 +284,9 @@ VectorXd timeAllocation( MatrixXd Path)
     The time allocation is many relative timeline but not one common timeline
 
     */
-    
+    for (int i = 0; i < time.size();i++){
+        time(i) = 1;
+    }
+
     return time;
 }
