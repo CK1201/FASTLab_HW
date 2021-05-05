@@ -84,12 +84,13 @@ void trajGeneration(Eigen::MatrixXd path)
     _polyTime  = timeAllocation(path);
 
     // generate a minimum-snap piecewise monomial polynomial-based trajectory
+    MatrixXd _polyCoeff2 = trajectoryGeneratorWaypoint.PolyQPGeneration_OOQP(_dev_order, path, vel, acc, _polyTime);
     _polyCoeff = trajectoryGeneratorWaypoint.PolyQPGeneration(_dev_order, path, vel, acc, _polyTime);
 
     visWayPointPath(path);
 
     //After you finish your homework, you can use the function visWayPointTraj below to visulize your trajectory
-    visWayPointTraj( _polyCoeff, _polyTime);
+    visWayPointTraj( _polyCoeff2, _polyTime);
 }
 
 int main(int argc, char** argv)
